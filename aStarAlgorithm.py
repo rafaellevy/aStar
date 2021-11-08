@@ -20,17 +20,19 @@ class MinHeap:
     def buildHeap(self,array):
         lastParentIdx = (len(array) - 2) // 2
         for i in range(lastParentIdx, -1,-1):
-            self.siftDown(array)
+            self.siftDown(i, array)
+
+        return array
 
         
     def insert(self, fScore):
         self.heap.append(fScore)
-        self.siftUp()
+        self.siftUp(len(self.heap)-1)
         
-    def siftUp(self):
-        currentIdx = len(self.heap) -1
+    def siftUp(self, currentIdx):
+        # currentIdx = len(self.heap) -1
         parentIdx = (currentIdx - 1) // 2
-        while currentIdx > 0 and self.heap[currentIdx] > self.heap[parentIdx]:
+        while currentIdx > 0 and self.heap[currentIdx] < self.heap[parentIdx]:
             self.swap(currentIdx, parentIdx, self.heap)
             currentIdx = parentIdx
             parentIdx = (currentIdx - 1) // 2
@@ -41,14 +43,27 @@ class MinHeap:
 
     
     def remove(self):
-        self.swap(0, len(self.heap) - 1)
+        self.swap(0, len(self.heap) - 1, self.heap)
         minFScore = self.heap.pop()
-        self.siftDown()
+        self.siftDown(0,self.heap)
         return minFScore
 
-
-    def siftDown(self, array):
-        currentIdx = 0
+    # def siftDown(self, currentIdx, endIdx, heap):
+    #     childOneIdx = currentIdx * 2 + 1
+    #     while childOneIdx <= endIdx:
+    #         childTwoIdx = currentIdx * 2 + 2 if currentIdx * 2 + 2 <= endIdx else -1
+    #         if childTwoIdx != -1 and heap[childTwoIdx] < heap[childOneIdx]:
+    #             idxToSwap = childTwoIdx
+    #         else:
+    #             idxToSwap = childOneIdx
+    #         if heap[idxToSwap] < heap[currentIdx]:
+    #             self.swap(currentIdx, idxToSwap, heap)
+    #             currentIdx = idxToSwap
+    #             childOneIdx = currentIdx * 2 + 1
+    #         else:
+    #             return    
+    def siftDown(self, currentIdx,  array):
+        # currentIdx = 0
         childOneIdx = 2 * currentIdx + 1
         childTwoIdx = 2 * currentIdx + 2 
         while childOneIdx <= len(array) -1:
@@ -70,3 +85,23 @@ class MinHeap:
                 else:
                     self.swap(currentIdx, childOneIdx, array)
                     break
+
+
+myArray = [48,12,24,7,8,-5,24,391,24,56,2,6,8,41]
+
+myHeap = MinHeap(myArray)
+
+
+
+myHeap.insert(76)
+print(myHeap.heap)
+
+myHeap.remove()
+myHeap.remove()
+print(myHeap.heap)
+myHeap.insert(87)
+print(myHeap.heap)
+
+
+
+

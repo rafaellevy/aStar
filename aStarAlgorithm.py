@@ -1,13 +1,10 @@
-
-
-
+# Used Pythagoras to caclculate the straight line between intersections. 
 def calculateHScore(frontier, destination):
     distanceForH = sqrt((frontier[0] - destination[0])**2 + (frontier[1] - destination[1])**2)
     return distanceForH
 
-
 class Node:
-   def __init__(self, number):
+    def __init__(self, number):
         self.number = number
         self.gScore = 0
         self.fScore = 0
@@ -15,7 +12,10 @@ class Node:
 
 class MinHeap:
     def __init__(self, array):
+        self.dictionary = {}
         self.heap = self.buildHeap(array)
+        # the keys are the indexes of the heap, and the values are the nodes
+        
 
     def buildHeap(self,array):
         lastParentIdx = (len(array) - 2) // 2
@@ -25,15 +25,24 @@ class MinHeap:
         return array
 
         
-    def insert(self, fScore):
-        self.heap.append(fScore)
+    def insert(self, node):
+        self.heap.append(node)
         self.siftUp(len(self.heap)-1)
         
+    # currentIDx = 0
     def siftUp(self, currentIdx):
+        # key is node , value is index
+        # THIS LIEN??
+        self.dictionary[self.heap[currentIdx]] = currentIdx
+        
         # currentIdx = len(self.heap) -1
         parentIdx = (currentIdx - 1) // 2
-        while currentIdx > 0 and self.heap[currentIdx] < self.heap[parentIdx]:
+        while currentIdx > 0 and self.heap[currentIdx].fScore < self.heap[parentIdx].fScore:
             self.swap(currentIdx, parentIdx, self.heap)
+            # NEW
+            self.dictionary[self.heap[currentIdx]] = currentIdx
+            self.dictionary[self.heap[parentIdx]] = parentIdx
+            # NEW
             currentIdx = parentIdx
             parentIdx = (currentIdx - 1) // 2
             
@@ -41,67 +50,165 @@ class MinHeap:
     def swap(self, iDxOne, iDxTwo, array):
         array[iDxOne], array[iDxTwo] = array[iDxTwo], array[iDxOne]
 
-    
+    #open_nodes = [30, 14]
+    #open_nodes = [14]
     def remove(self):
-        self.swap(0, len(self.heap) - 1, self.heap)
-        minFScore = self.heap.pop()
-        self.siftDown(0,self.heap)
-        return minFScore
-
-    # def siftDown(self, currentIdx, endIdx, heap):
-    #     childOneIdx = currentIdx * 2 + 1
-    #     while childOneIdx <= endIdx:
-    #         childTwoIdx = currentIdx * 2 + 2 if currentIdx * 2 + 2 <= endIdx else -1
-    #         if childTwoIdx != -1 and heap[childTwoIdx] < heap[childOneIdx]:
-    #             idxToSwap = childTwoIdx
-    #         else:
-    #             idxToSwap = childOneIdx
-    #         if heap[idxToSwap] < heap[currentIdx]:
-    #             self.swap(currentIdx, idxToSwap, heap)
-    #             currentIdx = idxToSwap
-    #             childOneIdx = currentIdx * 2 + 1
-    #         else:
-    #             return    
+        # what if there is only one node in the MinHeap?
+        if len(self.heap) == 1:
+            minFScore_node = self.heap.pop()
+        else:
+            self.swap(0, len(self.heap) - 1, self.heap)
+            minFScore_node = self.heap.pop()
+            if len(self.heap) > 1:
+                self.siftDown(0,self.heap)
+            else:
+                # In this situation... where there are only two elements in the array
+                #open_nodes = [30, 14]
+                #open_nodes = [14, 30]  --> 30 gets popped off
+                #open_nodes = [14]
+                #No need to sift down with only one element remaining in the array
+                # But, we still need to update the dictionary because node 14 is no longer at index 1
+                # We need to update it to be at index 0.
+                self.dictionary[self.heap[0]] = 0
+        return minFScore_node
+   
     def siftDown(self, currentIdx,  array):
         # currentIdx = 0
+        # NEW 
+        self.dictionary[array[currentIdx]] = currentIdx
         childOneIdx = 2 * currentIdx + 1
-        childTwoIdx = 2 * currentIdx + 2 
-        while childOneIdx <= len(array) -1:
+        # NEW
+        self.dictionary[array[childOneIdx]] = childOneIdx
+        childTwoIdx = 2 * currentIdx + 2
+        # NEW
+        if childTwoIdx <= len(array) -1:
+            self.dictionary[array[childTwoIdx]] = childTwoIdx
+        
+        while childOneIdx <= len(array) - 1:
             if childTwoIdx <= len(array) -1:
-                if array[currentIdx] < array[childOneIdx] and array[currentIdx] < array[childTwoIdx]:
+                if array[currentIdx].fScore < array[childOneIdx].fScore and array[currentIdx].fScore < array[childTwoIdx].fScore:
                     break
-                elif array[childOneIdx] < array[childTwoIdx]:
+                elif array[childOneIdx].fScore < array[childTwoIdx].fScore:
                     self.swap(currentIdx, childOneIdx, array)
+                    # NEW
+                    self.dictionary[array[currentIdx]] = currentIdx
+                    self.dictionary[array[childOneIdx]] = childOneIdx
+                    # NEW
                     currentIdx = childOneIdx
 
-                elif array[childOneIdx] > array[childTwoIdx]:
+                elif array[childOneIdx].fScore > array[childTwoIdx].fScore:
                     self.swap(currentIdx, childTwoIdx, array)
+                    # NEW
+                    self.dictionary[array[currentIdx]] = currentIdx
+                    self.dictionary[array[childTwoIdx]] = childTwoIdx
+                    # NEW
                     currentIdx = childTwoIdx
                 childOneIdx = 2 * currentIdx + 1
                 childTwoIdx = 2 * currentIdx + 2    
             else:
-                if array[currentIdx] < array[childOneIdx]:
+                if array[currentIdx].fScore < array[childOneIdx].fScore:
                     break
                 else:
                     self.swap(currentIdx, childOneIdx, array)
+                    # NEW
+                    self.dictionary[array[currentIdx]] = currentIdx
+                    self.dictionary[array[childOneIdx]] = childOneIdx
+                    # NEW
                     break
+                    
+# Algorithm
+def shortest_path(M,start,goal):
+    # All nodes list -- create nodes:
+    # key value pair  -- key is the number, value is the node 
+    all_nodes = {}
+    for intersection in M.intersections.keys():
+        all_nodes[intersection] = Node(intersection)
 
+    # initialize closed list -- this is the nodes that have been visited
+    visited_nodes = []
+    
+    # initialize open list -- all the nodes that we can expand from -- initialize with the start node
+    # open_nodes should be a minHeap, because we constantly need to find the frontier w/ the smallest fScore to expand from.
+    # at initialization, pass in array of one element -- the start node
+    open_nodes = MinHeap([all_nodes[start]])
+    
+    # initialize current node -- will be start node
+    current_node = open_nodes.remove()
+        
+    # how to get start node coordinates?    
+    # calculate h from start to goal
+    # g is currently 0 because that is the distance from the start
+    # 0 + h = f
+    current_node.fScore = calculateHScore(M.intersections[start], M.intersections[goal])
+    
+    # destination
+    destination = all_nodes[goal]
+    count = 1
+    
+    # keep looping/searching while current_node is NOT the goal
+    while current_node.number != destination.number:
+        count += 1
+        
+        # HEAP OPEN NODES [14]
+        # CURRENT NODE 30 [33, 8, 14, 16]
+        for neighbor in M.roads[current_node.number]:
+            # us the number to find the node
+            neighbor_node = all_nodes[neighbor]
+            
+            
+            if neighbor_node not in visited_nodes:
+                # calculate g score for this neighbor node
+                gScore = current_node.gScore + calculateHScore(M.intersections[current_node.number], M.intersections[neighbor_node.number])
+                # calculate h score from neighbor to destination
+                hScore = calculateHScore(M.intersections[neighbor_node.number], M.intersections[destination.number])
+                # calculate f score
+                fScore = hScore + gScore
+                
+                if gScore < neighbor_node.gScore or neighbor_node.gScore == 0:
+                    # update or give fScore
+                    neighbor_node.gScore = gScore
+                
+                
+                # check if this fScore is less than the existing fScore of the neighbor  node
+                # OR the fScore of the neighbor_node is 0 (meaning does not exist)
+                if fScore < neighbor_node.fScore or neighbor_node.fScore == 0:
+                    # update or give fScore
+                    neighbor_node.fScore = fScore
+                    # since this is the best fScore so far, we will update the camefrom property for the neighbor node
+                    neighbor_node.cameFrom = current_node
+                    
+                # add neighbor node to open nodes -- or update it? 
+                if neighbor_node not in open_nodes.heap:
+                    # insert the node
+                    open_nodes.insert(neighbor_node)
+                else:
+                    # neighbor node already in open nodes, meaning we have to reorganize the heap
+                    # so making the fScore smaller -- may make it smaller than its parent node -- so we call siftUp
+                    # pass in index where neighbor is in open nodes
+                    # key as the node to unlock the index 
+                    index = open_nodes.dictionary[neighbor_node]
+                    
+                    
+                    open_nodes.siftUp(index)
+           
+        
+                
+        
+        # after going through all the neighbors of the current node (updating/giving fScores as necessary),
+        # currentNode can go into visited_nodes
+        visited_nodes.append(current_node)
 
-myArray = [48,12,24,7,8,-5,24,391,24,56,2,6,8,41]
-
-myHeap = MinHeap(myArray)
-
-
-
-myHeap.insert(76)
-print(myHeap.heap)
-
-myHeap.remove()
-myHeap.remove()
-print(myHeap.heap)
-myHeap.insert(87)
-print(myHeap.heap)
-
-
-
-
+        # the next step, the new current node should be the open node with the lowest f score
+        current_node = open_nodes.remove()
+        
+        
+    # path list
+    path = []
+    
+    # the current_node is now the destination 
+    # keep finding camefrom until we find arrive at the start (where cameFrom is None)
+    while current_node != None:
+        path.append(current_node.number)
+        current_node = current_node.cameFrom
+        
+    return path[::-1]

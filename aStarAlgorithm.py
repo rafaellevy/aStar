@@ -1,4 +1,49 @@
-# Used Pythagoras to caclculate the straight line between intersections. 
+'''Implementing a Route Planner
+In this project you will use A* search to implement a "Google-maps" style route planning algorithm.
+# Used Pythagoras to caclculate the straight line between intersections.'''
+
+
+'''
+The map above (run the code cell if you don't see it) shows a disconnected network of 10 intersections. 
+The two intersections on the left are connected to each other but they are not connected to the rest of the road network. 
+On the graph above, the edge between 2 nodes(intersections) represents a literal straight road not just an abstract connection of 2 cities.
+
+These `Map` objects have two properties you will want to use to implement A\* search: `intersections` and `roads`
+
+**Intersections**
+
+The `intersections` are represented as a dictionary. 
+
+{0: [0.7798606835438107, 0.6922727646627362],
+ 1: [0.7647837074641568, 0.3252670836724646],
+ 2: [0.7155217893995438, 0.20026498027300055],
+ 3: [0.7076566826610747, 0.3278339270610988],
+ 4: [0.8325506249953353, 0.02310946309985762],
+ 5: [0.49016747075266875, 0.5464878695400415],
+ 6: [0.8820353070895344, 0.6791919587749445],
+ 7: [0.46247219371675075, 0.6258061621642713],
+ 8: [0.11622158839385677, 0.11236327488812581],
+ 9: [0.1285377678230034, 0.3285840695698353]}
+
+
+
+In this example, there are 10 intersections, each identified by an x,y coordinate.
+The coordinates are listed below. You can hover over each dot in the map above to see the intersection number.
+
+'''
+'''
+
+**Roads**
+
+The roads property is a list where, if i is an intersection, roads[i] contains 
+a list of the intersections that intersection i connects to.
+
+'''
+
+
+
+
+
 def calculateHScore(frontier, destination):
     distanceForH = sqrt((frontier[0] - destination[0])**2 + (frontier[1] - destination[1])**2)
     return distanceForH
